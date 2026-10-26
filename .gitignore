@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Build output (made by npm run dist; installers are release assets, never committed)
+dist/
+build/ai/
+build/iconhandler/
+build/*-meta.json
+*.exe
+*.blockmap
+*.msi
+*.zip
+
+# Release preparation (audit, drafts, installers); the repository's own copies of README, LICENSE, CHANGELOG
+# and THIRD_PARTY_NOTICES are at the root
+release/
+
+# Left by an interrupted save
+*.docstudio-tmp
+
+# Local and secret files
+.env
+.env.*
+*.pfx
+*.p12
+*.log
+.claude/
+CLAUDE.md
+
+# Windows
+Thumbs.db
+desktop.ini

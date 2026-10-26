@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Doc Studio</title>
+<!-- The page a phone opens from Doc Studio's Phone tool (served by phone.js). Everything is in this one file. -->
+<style>
+  :root { --bg: #f2f3f5; --card: #fff; --text: #1d2129; --muted: #6b7280; --line: #e2e5ea; --red: #e5292f; --ok: #1f9d55; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #15171c; --card: #1f2229; --text: #f2f3f5; --muted: #a9afba; --line: #2e333c; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.45 -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); padding: 16px 16px calc(24px + env(safe-area-inset-bottom)); }
+  header { display: flex; align-items: baseline; gap: 8px; margin: 4px 2px 14px; }
+  header b { font-size: 22px; } header b span { color: var(--red); } header small { color: var(--muted); }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+  h2 { margin: 0 0 4px; font-size: 17px; } p { margin: 0 0 12px; color: var(--muted); font-size: 14px; }
+  .buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .btn { display: grid; width: 100%; border: none; font: inherit; place-items: center; gap: 4px; padding: 16px 8px; border-radius: 12px; background: var(--red); color: #fff; font-weight: 600; text-align: center; cursor: pointer; }
+  .btn.alt { background: transparent; color: var(--text); border: 1.5px solid var(--line); }
+  .btn svg { width: 28px; height: 28px; }
+  input[type=file] { display: none; }
+  .sheet { display: grid; gap: 8px; margin-top: 10px; }
+  .sheet[hidden] { display: none; }
+  .pick { display: grid; grid-template-columns: 28px 1fr; gap: 12px; align-items: center; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 12px; cursor: pointer; }
+  .pick svg { width: 26px; height: 26px; color: var(--red); }
+  .pick span { display: grid; } .pick small { color: var(--muted); font-size: 13px; }
+  ul { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 8px; }
+  li { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; }
+  li .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+  li .state { font-size: 13px; color: var(--muted); white-space: nowrap; }
+  li .state.ok { color: var(--ok); } li .state.bad { color: var(--red); }
+  li .bar { grid-column: 1 / -1; height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
+  li .bar i { display: block; height: 100%; width: 0; background: var(--red); transition: width .2s; }
+  a.get { color: var(--red); font-weight: 600; text-decoration: none; font-size: 14px; }
+  .empty { color: var(--muted); font-size: 14px; margin-top: 4px; }
+  footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 6px; }
+</style>
+</head>
+<body>
+<header><b>Doc <span>Studio</span></b><small>phone link</small></header>
+
+<section>
+  <h2>Send to your PC</h2>
+  <p>Photos and files appear in Doc Studio on your PC.</p>
+  <div class="buttons">
+    <button type="button" class="btn" id="choose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Choose files</button>
+    <label class="btn alt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Take a photo<input id="camera" type="file" accept="image/*" capture="environment"></label>
+  </div>
+  <!-- Choose files: Gallery (photos and videos, the phone's photo picker) or Files (documents). Asking for one kind at a
+       time keeps the phone from offering the camera here; Take a photo is the camera. -->
+  <div class="sheet" id="sheet" hidden>
+    <label class="pick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg><span><b>Gallery</b><small>Photos and videos</small></span><input id="gallery" type="file" accept="image/*,video/*" multiple></label>
+    <label class="pick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg><span><b>Files</b><small>PDFs, documents and other files</small></span><input id="files" type="file" multiple accept=".pdf,.doc,.docx,.docm,.dotx,.odt,.ott,.rtf,.txt,.md,.markdown,.log,.xls,.xlsx,.xlsm,.xlsb,.ods,.csv,.tsv,.numbers,.ppt,.pptx,.pptm,.ppsx,.odp,.epub,.html,.htm,.json,.xml,.zip,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.ms-excel,application/vnd.ms-powerpoint,application/vnd.oasis.opendocument.text,application/vnd.oasis.opendocument.spreadsheet,application/vnd.oasis.opendocument.presentation,application/rtf,text/plain,text/markdown,text/csv,application/epub+zip,application/zip"></label>
+  </div>
+  <ul id="sent"></ul>
+</section>
+
+<section>
+  <h2>From your PC</h2>
+  <p>Files Doc Studio offers to this phone. Tap one to download it.</p>
+  <ul id="offered"></ul>
+  <div id="none" class="empty">Nothing offered yet. In Doc Studio, use Send to phone.</div>
+</section>
+
+<footer>Keep this page open while you use it. It stops working when the Phone window in Doc Studio is closed.</footer>
+
+<script>
+  'use strict';
+  var key = new URLSearchParams(location.search).get('k') || '';
+  var q = function (path, extra) { return path + '?k=' + encodeURIComponent(key) + (extra || ''); };
+  var size = function (n) { return n < 1024 ? n + ' B' : n < 1048576 ? (n / 1024).toFixed(0) + ' KB' : (n / 1048576).toFixed(1) + ' MB'; };
+  var el = function (tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+  var queue = [], busy = false;
+
+  function add(files) {
+    for (var i = 0; i < files.length; i++) {
+      var f = files[i];
+      var li = el('li'), name = el('span', 'name', f.name || 'photo.jpg'), state = el('span', 'state', 'Waiting…'), bar = el('div', 'bar'), fill = el('i');
+      bar.appendChild(fill); li.appendChild(name); li.appendChild(state); li.appendChild(bar);
+      document.getElementById('sent').prepend(li);
+      queue.push({ file: f, state: state, fill: fill, bar: bar });
+    }
+    next();
+  }
+  function next() {
+    if (busy || !queue.length) return;
+    busy = true;
+    var job = queue.shift(), x = new XMLHttpRequest();
+    x.open('POST', q('/upload', '&name=' + encodeURIComponent(job.file.name || 'photo.jpg')));
+    x.upload.onprogress = function (e) { if (e.lengthComputable) { job.fill.style.width = (e.loaded / e.total * 100) + '%'; job.state.textContent = Math.round(e.loaded / e.total * 100) + '%'; } };
+    x.onload = function () {
+      if (x.status === 200) { job.state.textContent = 'Sent ✓'; job.state.className = 'state ok'; job.bar.style.display = 'none'; }
+      else { job.state.textContent = x.status === 403 ? 'Link expired' : x.status === 413 ? 'Too large' : 'Failed'; job.state.className = 'state bad'; }
+      busy = false; next();
+    };
+    x.onerror = function () { job.state.textContent = 'Not sent: is the PC on this Wi-Fi?'; job.state.className = 'state bad'; busy = false; next(); };
+    job.state.textContent = 'Sending…';
+    x.send(job.file);
+  }
+  document.getElementById('camera').addEventListener('change', function (e) { add(e.target.files); e.target.value = ''; });
+  document.getElementById('files').addEventListener('change', function (e) { add(e.target.files); e.target.value = ''; document.getElementById('sheet').hidden = true; });
+  document.getElementById('gallery').addEventListener('change', function (e) { add(e.target.files); e.target.value = ''; document.getElementById('sheet').hidden = true; });
+  document.getElementById('choose').addEventListener('click', function () { var s = document.getElementById('sheet'); s.hidden = !s.hidden; });
+
+  // Files the PC offers: checked every few seconds.
+  var shown = '';
+  function refresh() {
+    fetch(q('/files')).then(function (r) { return r.ok ? r.json() : null; }).then(function (list) {
+      if (!list) return;
+      var sig = JSON.stringify(list);
+      if (sig === shown) return;
+      shown = sig;
+      var ul = document.getElementById('offered');
+      ul.textContent = '';
+      document.getElementById('none').style.display = list.length ? 'none' : '';
+      list.forEach(function (f) {
+        var li = el('li'), a = el('a', 'get', 'Download');
+        a.href = q('/download', '&id=' + encodeURIComponent(f.id));
+        a.setAttribute('download', f.name);
+        li.appendChild(el('span', 'name', f.name)); li.appendChild(a);
+        li.appendChild(el('span', 'state', size(f.size)));
+        ul.appendChild(li);
+      });
+    }).catch(function () {});
+  }
+  refresh();
+  setInterval(refresh, 3000);
+</script>
+</body>
+</html>

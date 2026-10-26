@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: file:; media-src 'self' blob:; font-src 'self' data: blob:; frame-src blob: data:; object-src blob:; connect-src 'self' blob: data:; worker-src 'self' blob:">
+  <title>Doc Studio</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="shell.css">
+</head>
+<body>
+  <header id="appbar">
+    <button id="btn-sidebar" class="appbar-icon" type="button" title="Hide the sidebar" aria-label="Show or hide the sidebar"></button>
+    <div id="brand"><img src="assets/logo.png" alt="" width="40" height="40"><span class="brand-text"><span class="brand-name">Doc <b>Studio</b></span><span class="brand-by">by Griffith Software</span></span></div>
+    <div id="app-search">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-5-5"/></svg>
+      <input id="menu-search" type="search" placeholder="Search documents..." aria-label="Search documents and commands (Alt+/)" autocomplete="off" spellcheck="false">
+    </div>
+    <div id="appbar-right">
+      <button id="btn-theme" class="appbar-icon" type="button" title="Light / dark mode" aria-label="Light or dark mode"></button>
+      <button id="btn-settings" class="appbar-icon" type="button" title="Settings" aria-label="Settings"></button>
+    </div>
+  </header>
+  <div id="menu-results" class="menu-panel" hidden></div>
+
+  <div id="actionbar" role="toolbar" aria-label="Main actions">
+    <div id="open-split" class="split-btn">
+      <button id="btn-open" class="ab-primary" type="button" title="Open (Ctrl+O)"></button><button id="btn-open-more" class="ab-primary ab-caret" type="button" title="New and recent" aria-label="New and recent documents" data-menu-anchor></button>
+    </div>
+    <span class="ab-sep"></span>
+    <button id="ab-save" class="ab" type="button" title="Save (Ctrl+S)"></button>
+    <button id="ab-print" class="ab" type="button" title="Print (Ctrl+P)"></button>
+    <span class="ab-sep"></span>
+    <button id="ab-edit" class="ab" type="button" title="Edit (Ctrl+E switches)"></button>
+    <button id="ab-annotate" class="ab" type="button" title="Annotate" data-menu-anchor></button>
+    <button id="ab-convert" class="ab" type="button" title="Convert" data-menu-anchor></button>
+    <span class="ab-sep"></span>
+    <button id="ab-more" class="ab" type="button" title="More: every menu (Alt+letter)" data-menu-anchor></button>
+  </div>
+
+  <div id="workspace">
+    <aside id="sidebar" aria-label="Navigation">
+      <nav id="side-places"></nav>
+      <hr>
+      <nav id="side-tools"></nav>
+    </aside>
+
+    <div id="docarea">
+      <header id="tabbar">
+        <div id="tabs" role="tablist"></div>
+      </header>
+
+      <div id="docbar" hidden>
+        <div id="pager">
+          <button id="pg-prev" class="db-btn" type="button" title="Previous page" aria-label="Previous page"></button>
+          <button id="pg-next" class="db-btn" type="button" title="Next page" aria-label="Next page"></button>
+          <input id="pg-num" type="text" inputmode="numeric" aria-label="Page number">
+          <span id="pg-count"></span>
+          <span class="db-sep"></span>
+        </div>
+        <div id="zoombox">
+          <button id="zm-out" class="db-btn" type="button" title="Zoom out (Ctrl+-)" aria-label="Zoom out"></button>
+          <button id="zm-in" class="db-btn" type="button" title="Zoom in (Ctrl+=)" aria-label="Zoom in"></button>
+          <select id="zm-sel" class="db-select" title="Zoom" aria-label="Zoom"></select>
+        </div>
+        <div id="docbar-right">
+          <div id="mode-switch" class="seg" hidden></div>
+          <button id="db-star" class="db-icon" type="button" title="Star this document" aria-label="Star this document"></button>
+          <span id="layout-btns">
+            <button id="lay-single" class="db-icon" type="button" title="Single page" aria-label="Single page"></button>
+            <button id="lay-two" class="db-icon" type="button" title="Two pages side by side" aria-label="Two pages"></button>
+            <button id="lay-thumbs" class="db-icon" type="button" title="Page thumbnails" aria-label="Page thumbnails"></button>
+          </span>
+          <span class="db-sep"></span>
+          <button id="db-full" class="db-icon" type="button" title="Full screen (F11)" aria-label="Full screen"></button>
+        </div>
+      </div>
+
+      <nav id="menubar" hidden>
+        <span id="doc-kind"></span>
+        <button id="doc-title" class="ghost" type="button"></button>
+        <div id="menu-names" role="menubar"></div>
+      </nav>
+
+      <div id="toolbar" hidden>
+        <div id="tool-left"></div>
+        <div id="tool-right"></div>
+      </div>
+
+      <div id="findbar" hidden>
+        <input id="find-input" type="search" placeholder="Find in document" aria-label="Find in document">
+        <button id="find-case" class="ghost find-opt" title="Match case" aria-pressed="false">Aa</button>
+        <button id="find-regex" class="ghost find-opt" title="Use regular expressions" aria-pressed="false">.*</button>
+        <button id="find-prev" class="ghost" title="Previous (Shift+Enter)">↑</button>
+        <button id="find-next" class="ghost" title="Next (Enter)">↓</button>
+        <span id="find-count"></span>
+        <span id="replace-row" hidden>
+          <input id="replace-input" type="text" placeholder="Replace with" aria-label="Replace with">
+          <button id="replace-one" class="ghost">Replace</button>
+          <button id="replace-all" class="ghost">Replace all</button>
+        </span>
+        <button id="find-toggle-replace" class="ghost" title="Find and replace (Ctrl+H)">Replace…</button>
+        <button id="find-close" class="ghost" title="Close (Esc)">✕</button>
+      </div>
+
+      <div id="stage-row">
+        <main id="stage">
+          <section id="welcome" class="page-view"></section>
+          <section id="browser" class="page-view" hidden></section>
+        </main>
+        <aside id="thumbs" hidden aria-label="Page thumbnails"></aside>
+      </div>
+    </div>
+  </div>
+
+  <footer id="status">
+    <span id="status-left"></span>
+    <span id="status-right"></span>
+    <span id="status-version" title="Doc Studio version"></span>
+  </footer>
+
+  <div id="drop-hint" hidden><div>Drop to open</div></div>
+
+  <script src="../node_modules/jszip/dist/jszip.min.js"></script>
+  <script src="../node_modules/docx-preview/dist/docx-preview.min.js"></script>
+  <script src="../node_modules/marked/lib/marked.umd.js"></script>
+  <script src="../node_modules/dompurify/dist/purify.min.js"></script>
+  <script src="../node_modules/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="../node_modules/rtf.js/dist/WMFJS.bundle.min.js"></script>
+  <script src="../node_modules/rtf.js/dist/EMFJS.bundle.min.js"></script>
+  <script src="../node_modules/rtf.js/dist/RTFJS.bundle.min.js"></script>
+  <script src="formats.js"></script>
+  <script src="viewers.js"></script>
+  <script src="docx-editor.js"></script>
+  <script src="vendor/formula.js"></script>
+  <script src="sheet-model.js"></script>
+  <script src="sheet-calc.js"></script>
+  <script src="sheet-view.js"></script>
+  <script src="../node_modules/chart.js/dist/chart.umd.min.js"></script>
+  <script src="sheet-structure.js"></script>
+  <script src="sheet-features.js"></script>
+  <script src="sheet-tools.js"></script>
+  <script src="sheet-tools2.js"></script>
+  <script src="vendor/pdf.js"></script>
+  <script src="pdf-editor.js"></script>
+  <script src="pptx-editor.js"></script>
+  <script src="pptx-ui.js"></script>
+  <script src="pptx-tools.js"></script>
+  <script src="pptx-tools2.js"></script>
+  <script src="odt-editor.js"></script>
+  <script src="rtf-editor.js"></script>
+  <script src="../node_modules/mammoth/mammoth.browser.min.js"></script>
+  <script src="../node_modules/turndown/dist/turndown.js"></script>
+  <script src="../node_modules/turndown-plugin-gfm/dist/turndown-plugin-gfm.js"></script>
+  <script src="convert-ui.js"></script>
+  <script src="app.js"></script>
+  <script src="recovery.js"></script>
+  <script src="shell.js"></script>
+  <script src="docx-tools.js"></script>
+  <script src="docs-common.js"></script>
+  <script src="docs-extra.js"></script>
+  <script src="menus.js"></script>
+  <script src="ui-shell.js"></script>
+  <script src="image-editor.js"></script>
+  <script src="bg-remove.js"></script>
+  <script src="vendor/qrcode/qrcode.js"></script>
+  <script src="tools-panel.js"></script>
+  <script src="ai-worker.js"></script>
+  <script src="popout.js"></script>
+  <script src="split.js"></script>
+  <script src="toolbar-layout.js"></script>
+</body>
+</html>

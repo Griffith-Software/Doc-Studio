@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "doc-studio": {
+      "type": "stdio",
+      "command": "${LOCALAPPDATA}/Programs/Doc Studio/Doc Studio.exe",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/server/mcp-server.js"],
+      "env": { "ELECTRON_RUN_AS_NODE": "1" }
+    }
+  }
+}

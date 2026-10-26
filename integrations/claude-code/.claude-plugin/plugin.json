@@ -1,0 +1,10 @@
+{
+  "name": "doc-studio",
+  "displayName": "Doc Studio",
+  "version": "0.0.0",
+  "description": "Use Doc Studio from Claude: read, create, convert, merge, split, compress, OCR, scan and edit pictures. Creates new files only.",
+  "author": {
+    "name": "Griffith Software"
+  },
+  "keywords": ["documents", "pdf", "word", "markdown", "convert", "ocr", "scan", "images"]
+}

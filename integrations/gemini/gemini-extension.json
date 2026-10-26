@@ -1,0 +1,12 @@
+{
+  "name": "doc-studio",
+  "version": "0.0.0",
+  "description": "Use Doc Studio from Gemini CLI: read, create, convert, merge, split, compress, OCR, scan and edit pictures. Creates new files only.",
+  "contextFileName": "GEMINI.md",
+  "mcpServers": {
+    "doc-studio": {
+      "command": "node",
+      "args": ["${extensionPath}${/}server${/}mcp-server.js"]
+    }
+  }
+}
